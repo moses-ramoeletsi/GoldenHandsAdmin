@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 const API_BASE_URL = import.meta.env.PROD
-  ? "https://golden-hands-admin-server.vercel.app/"
+  ? "https://golden-hands-admin-server.vercel.app"
   : "http://localhost:5000";
 
 export const userFunctionStore = create((set, get) => ({
