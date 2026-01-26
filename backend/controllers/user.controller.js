@@ -81,15 +81,22 @@ export const createUser = async (req, res) => {
     });
   }
 };
-  export const getUsers = async (req, res) => {
-    try {
-      const users = await User.find({});
-      res.status(200).json({ success: true, data: users });
-    } catch (error) {
-      console.log("Error in getting users", error.message);
-      res.status(500).json({ success: false, message: "Server error" });
-    }
-  };
+ export const getUsers = async (req, res) => {
+  try {
+    console.log('getUsers called');
+    const users = await User.find({});
+    return res.status(200).json({ success: true, data: users });
+  } catch (error) {
+    // log full error for debugging
+    console.error('getUsers error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error?.message || 'Server error while fetching users',
+      // optional: include stack only in dev
+      ...(process.env.NODE_ENV !== 'production' ? { stack: error?.stack } : {}),
+    });
+  }
+};
   
 //   export const updateProject = async (req, res) => {
 //     const { id } = req.params;
