@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 5000;
 app.use(cors({
-    origin: ['https://moses-ramoeletsi-portfolio.vercel.app', 'http://localhost:5173'],
+    origin: ['https://golden-hands-admin.vercel.app/', 'http://localhost:5173'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
