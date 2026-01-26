@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Image, Briefcase, BookOpen, Plus, Edit, Trash2, X, Menu, Search, Save, LogOut } from 'lucide-react';
+import {userFunctionStore} from '../store/user.store';
+
 
 // Mock initial data
-const initialStudents = [
-  { id: 1, firstName: 'Sarah', lastName: 'Johnson', email: 'sarah.j@email.com', contact: '+266 5555 1111', address: '123 Main St, Maseru', program: 'Certificate in Hair Care and Styling', nextOfKinName: 'John Johnson', nextOfKinContact: '+266 5555 2222', enrollmentDate: '2024-01-15' },
-  { id: 2, firstName: 'Maria', lastName: 'Lopez', email: 'maria.l@email.com', contact: '+266 5555 3333', address: '456 Oak Ave, Maseru', program: 'Nail Technology', nextOfKinName: 'Carlos Lopez', nextOfKinContact: '+266 5555 4444', enrollmentDate: '2024-02-01' }
-];
+// const initialStudents = [
+//   { id: 1, firstName: 'Sarah', lastName: 'Johnson', email: 'sarah.j@email.com', contact: '+266 5555 1111', address: '123 Main St, Maseru', program: 'Certificate in Hair Care and Styling', nextOfKinName: 'John Johnson', nextOfKinContact: '+266 5555 2222', enrollmentDate: '2024-01-15' },
+//   { id: 2, firstName: 'Maria', lastName: 'Lopez', email: 'maria.l@email.com', contact: '+266 5555 3333', address: '456 Oak Ave, Maseru', program: 'Nail Technology', nextOfKinName: 'Carlos Lopez', nextOfKinContact: '+266 5555 4444', enrollmentDate: '2024-02-01' }
+// ];
 
 const initialGallery = [
   { id: 1, category: 'Hair', title: 'Braided Hairstyle', imageUrl: 'https://placeholder.com/300' },
@@ -74,22 +76,87 @@ const Sidebar = ({ activeTab, setActiveTab, isMobileOpen, setIsMobileOpen }) => 
 
 // Students Management
 const StudentsTab = () => {
-  const [students, setStudents] = useState(initialStudents);
+  const initialFormState = {
+    firstName: "",
+    lastName: "",
+    email: "",
+    contacts: "",
+    address: "",
+    program: "",
+    nextOfKinName: "",
+    nextOfKinContacts: "",
+  };
+
+  // const [students, setStudents] = useState(initialStudents);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState({
-    firstName: '', lastName: '', email: '', contact: '', address: '', 
-    program: '', nextOfKinName: '', nextOfKinContact: ''
-  });
+  const { addUser, fetchUsers, students } = userFunctionStore();
+  const [formData, setFormData] = useState(initialFormState);
 
-  const handleSubmit = () => {
-    if (editingStudent) {
-      setStudents(students.map(s => s.id === editingStudent.id ? { ...formData, id: s.id, enrollmentDate: s.enrollmentDate } : s));
-    } else {
-      setStudents([...students, { ...formData, id: Date.now(), enrollmentDate: new Date().toISOString().split('T')[0] }]);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const programTypes = [
+    "Hair Care and Styling",
+    "Nail Technology",
+  ];
+
+  const isEditMode = Boolean(editingStudent);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      if (
+        !formData.firstName ||
+        !formData.lastName ||
+        !formData.email ||
+        !formData.contacts ||
+        !formData.address ||
+        !formData.program ||
+        !formData.nextOfKinName ||
+        !formData.nextOfKinContacts
+      ) {
+        setError("Please fill in all required fields");
+        setIsLoading(false);
+        return;
+      }
+
+      const userToSubmit = { ...formData };
+
+      let result;
+      if (isEditMode) {
+        // implement update flow when backend route exists
+        // e.g. result = await updateUser(editingStudent.id, userToSubmit);
+        setError("Edit/update not implemented yet");
+        setIsLoading(false);
+        return;
+      } else {
+        result = await addUser(userToSubmit);
+      }
+
+      if (result && result.success) {
+        // replace toast with simple alert or update UI as needed
+        alert(result.message || "User added successfully");
+        // optionally refresh list or append locally:
+        await fetchUsers();
+        closeModal();
+      } else {
+        setError(result?.message || `Failed to ${isEditMode ? "update" : "add"} user`);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-    closeModal();
   };
 
   const openModal = (student = null) => {
@@ -98,7 +165,7 @@ const StudentsTab = () => {
       setFormData(student);
     } else {
       setEditingStudent(null);
-      setFormData({ firstName: '', lastName: '', email: '', contact: '', address: '', program: '', nextOfKinName: '', nextOfKinContact: '' });
+      setFormData({ ...initialFormState });
     }
     setIsModalOpen(true);
   };
@@ -110,11 +177,11 @@ const StudentsTab = () => {
 
   const deleteStudent = (id) => {
     if (confirm('Are you sure you want to delete this student?')) {
-      setStudents(students.filter(s => s.id !== id));
+      students(students.filter(s => s.id !== id));
     }
   };
 
-  const filteredStudents = students.filter(s => 
+  const filteredStudents = students.filter(s =>
     s.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -141,40 +208,35 @@ const StudentsTab = () => {
           />
         </div>
       </div>
-
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Program</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Enrollment Date</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredStudents.map(student => (
-                <tr key={student.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">{student.firstName} {student.lastName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
-                  <td className="px-6 py-4">{student.program}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{student.enrollmentDate}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button onClick={() => openModal(student)} className="text-blue-600 hover:text-blue-800 mr-3">
-                      <Edit size={18} />
-                    </button>
-                    <button onClick={() => deleteStudent(student.id)} className="text-red-600 hover:text-red-800">
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+<div className="bg-white rounded-lg shadow overflow-hidden">
+  <div className="overflow-x-auto">
+    <table className="w-full">
+      <thead className="bg-gray-50">
+        <tr>
+          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
+          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
+          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Program</th>
+          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Enrollment Date</th>
+          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-gray-200">
+        {filteredStudents.map(student => (
+          <tr key={student._id ?? student.id} className="hover:bg-gray-50">
+            <td className="px-6 py-4 whitespace-nowrap">{student.firstName} {student.lastName}</td>
+            <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
+            <td className="px-6 py-4">{student.program}</td>
+            <td className="px-6 py-4 whitespace-nowrap">{student.enrollmentDate ?? ''}</td>
+            <td className="px-6 py-4 whitespace-nowrap">
+              <button onClick={() => openModal(student)} className="text-blue-600 hover:text-blue-800 mr-3"><Edit size={18} /></button>
+              <button onClick={() => deleteStudent(student._id ?? student.id)} className="text-red-600 hover:text-red-800"><Trash2 size={18} /></button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -220,8 +282,8 @@ const StudentsTab = () => {
                   <label className="block text-sm font-semibold mb-2">Contact</label>
                   <input
                     type="tel"
-                    value={formData.contact}
-                    onChange={(e) => setFormData({...formData, contact: e.target.value})}
+                    value={formData.contacts}
+                    onChange={(e) => setFormData({...formData, contacts: e.target.value})}
                     className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
                   />
                 </div>
@@ -243,10 +305,11 @@ const StudentsTab = () => {
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
                 >
                   <option value="">Select Program</option>
-                  <option value="Certificate in Hair Care and Styling">Certificate in Hair Care and Styling</option>
-                  <option value="Nail Technology">Nail Technology</option>
-                  <option value="Makeup Artistry">Makeup Artistry</option>
-                  <option value="Beauty Therapy">Beauty Therapy</option>
+                  {programTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
                 </select>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
@@ -263,19 +326,20 @@ const StudentsTab = () => {
                   <label className="block text-sm font-semibold mb-2">Next of Kin Contact</label>
                   <input
                     type="tel"
-                    value={formData.nextOfKinContact}
-                    onChange={(e) => setFormData({...formData, nextOfKinContact: e.target.value})}
+                    value={formData.nextOfKinContacts}
+                    onChange={(e) => setFormData({...formData, nextOfKinContacts: e.target.value})}
                     className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
                   />
                 </div>
               </div>
+              {error && <div className="text-red-600 font-medium">{error}</div>}
             </div>
             <div className="sticky bottom-0 bg-gray-50 px-6 py-4 flex justify-end gap-3">
               <button onClick={closeModal} className="px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100">
                 Cancel
               </button>
-              <button onClick={handleSubmit} className="bg-yellow-500 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-400 flex items-center gap-2">
-                <Save size={18} /> Save
+              <button onClick={handleSubmit} disabled={isLoading} className="bg-yellow-500 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-400 flex items-center gap-2">
+                <Save size={18} /> {isLoading ? 'Saving...' : 'Save'}
               </button>
             </div>
           </div>
