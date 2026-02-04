@@ -1057,7 +1057,6 @@ const CoursesTab = () => {
   );
 };
 
-// Main App
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('students');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
