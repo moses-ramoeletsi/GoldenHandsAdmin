@@ -13,6 +13,11 @@ export const createUser = async (req, res) => {
   });
 
   try {
+    // guard: ensure DB is connected before attempting writes
+    if (mongoose.connection.readyState !== 1) {
+      console.error('createUser: mongoose not connected, state=', mongoose.connection.readyState);
+      return res.status(503).json({ success: false, message: 'Database not connected' });
+    }
     if (!user.firstName || !user.lastName || 
         !user.email || !user.contacts || !user.address ||
         !user.program || !user.nextOfKinName || !user.nextOfKinContacts) {
@@ -58,7 +63,8 @@ export const createUser = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error in adding new user:", error.message);
+    // log full error for easier debugging (message + stack)
+    console.error("Error in adding new user:", error && error.message, error && error.stack);
     
     if (error.message === 'Database timeout') {
       return res.status(504).json({
@@ -84,15 +90,19 @@ export const createUser = async (req, res) => {
  export const getUsers = async (req, res) => {
   try {
     console.log('getUsers called');
+    if (mongoose.connection.readyState !== 1) {
+      console.error('getUsers: mongoose not connected, state=', mongoose.connection.readyState);
+      return res.status(503).json({ success: false, message: 'Database not connected' });
+    }
+
     const users = await User.find({});
     return res.status(200).json({ success: true, data: users });
   } catch (error) {
     // log full error for debugging
-    console.error('getUsers error:', error);
+    console.error('getUsers error:', error && error.message, error && error.stack);
     return res.status(500).json({
       success: false,
       message: error?.message || 'Server error while fetching users',
-      // optional: include stack only in dev
       ...(process.env.NODE_ENV !== 'production' ? { stack: error?.stack } : {}),
     });
   }
