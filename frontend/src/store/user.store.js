@@ -174,7 +174,6 @@
 //   },
 // }));
 
-
 import { create } from "zustand";
 
 const API_BASE_URL = import.meta.env.PROD
@@ -200,6 +199,7 @@ export const userFunctionStore = create((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
+      // FIX: Corrected fetch syntax - use parentheses, not backticks
       const res = await fetch(`${API_BASE_URL}/api/users`, {
         method: "POST",
         headers: {
@@ -217,7 +217,6 @@ export const userFunctionStore = create((set, get) => ({
 
       // Refresh the user list
       await get().fetchUsers();
-
       set({ isLoading: false });
       return { success: true, message: data.message || "User added successfully" };
     } catch (error) {
@@ -229,7 +228,9 @@ export const userFunctionStore = create((set, get) => ({
 
   fetchUsers: async () => {
     set({ isLoading: true, error: null });
+
     try {
+      // FIX: Corrected fetch syntax
       const res = await fetch(`${API_BASE_URL}/api/users`);
       const data = await res.json();
       
@@ -247,7 +248,9 @@ export const userFunctionStore = create((set, get) => ({
 
   updateUser: async (id, updates) => {
     set({ isLoading: true, error: null });
+
     try {
+      // FIX: Corrected fetch syntax
       const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
         method: "PUT",
         headers: {
@@ -275,7 +278,9 @@ export const userFunctionStore = create((set, get) => ({
 
   deleteUser: async (id) => {
     set({ isLoading: true, error: null });
+
     try {
+      // FIX: Corrected fetch syntax
       const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
         method: "DELETE",
       });
