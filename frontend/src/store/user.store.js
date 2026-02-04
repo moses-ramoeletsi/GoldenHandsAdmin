@@ -1,84 +1,84 @@
-import { create } from "zustand";
+// import { create } from "zustand";
 
-const API_BASE_URL = import.meta.env.PROD
-  ? "https://golden-hands-admin-server.vercel.app"
-  : "http://localhost:5000";
+// const API_BASE_URL = import.meta.env.PROD
+//   ? "https://golden-hands-admin-server.vercel.app"
+//   : "http://localhost:5000";
 
-export const userFunctionStore = create((set, get) => ({
-  students: [],
-  isLoading: false,
-  error: null,
+// export const userFunctionStore = create((set, get) => ({
+//   students: [],
+//   isLoading: false,
+//   error: null,
 
-setStudents: (students) => set({ students }),
-  addUser: async (newUser) => {
-    // Validate input using the passed newUser object
-    if (
-      !newUser?.firstName ||
-      !newUser?.lastName ||
-      !newUser?.email ||
-      !newUser?.contacts ||
-      !newUser?.address ||
-      !newUser?.program ||
-      !newUser?.nextOfKinName ||
-      !newUser?.nextOfKinContacts
-    ) {
-      return { success: false, message: "Please fill all required fields" };
-    }
+// setStudents: (students) => set({ students }),
+//   addUser: async (newUser) => {
+//     // Validate input using the passed newUser object
+//     if (
+//       !newUser?.firstName ||
+//       !newUser?.lastName ||
+//       !newUser?.email ||
+//       !newUser?.contacts ||
+//       !newUser?.address ||
+//       !newUser?.program ||
+//       !newUser?.nextOfKinName ||
+//       !newUser?.nextOfKinContacts
+//     ) {
+//       return { success: false, message: "Please fill all required fields" };
+//     }
 
-    set({ isLoading: true, error: null });
+//     set({ isLoading: true, error: null });
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newUser),
-      });
+//     try {
+//       const res = await fetch(`${API_BASE_URL}/api/users`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(newUser),
+//       });
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => null);
-        throw new Error(text || `HTTP error! status: ${res.status}`);
-      }
+//       if (!res.ok) {
+//         const text = await res.text().catch(() => null);
+//         throw new Error(text || `HTTP error! status: ${res.status}`);
+//       }
 
-      const data = await res.json();
-      await get().fetchUsers();
+//       const data = await res.json();
+//       await get().fetchUsers();
 
-      // Expecting backend to return { success: true, data: <user>, message: ... }
-      if (!data?.success) {
-        set({ isLoading: false });
-        return { success: false, message: data?.message || "Failed to add user" };
-      }
+//       // Expecting backend to return { success: true, data: <user>, message: ... }
+//       if (!data?.success) {
+//         set({ isLoading: false });
+//         return { success: false, message: data?.message || "Failed to add user" };
+//       }
 
-      set((state) => ({
-        users: [...state.users, data.data],
-        isLoading: false,
-      }));
+//       set((state) => ({
+//         users: [...state.users, data.data],
+//         isLoading: false,
+//       }));
 
-      return { success: true, message: data.message || "User added successfully" };
-    } catch (error) {
-      console.error("Error in addUser:", error);
-      set({ isLoading: false, error: error.message });
-      return { success: false, message: error.message || "An unexpected error occurred." };
-    }
-  },
+//       return { success: true, message: data.message || "User added successfully" };
+//     } catch (error) {
+//       console.error("Error in addUser:", error);
+//       set({ isLoading: false, error: error.message });
+//       return { success: false, message: error.message || "An unexpected error occurred." };
+//     }
+//   },
 
-  fetchUsers: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/users`);
-      const data = await res.json();
-      if (!res.ok) {
-        set({ isLoading: false, error: data?.message || `HTTP ${res.status}` });
-        return;
-      }
-      // backend returns { success: true, data: [...] }
-      set({ students: data?.data ?? [], isLoading: false });
-    } catch (err) {
-      console.error("Error fetching users:", err);
-      set({ isLoading: false, error: err.message });
-    }
-  },
+//   fetchUsers: async () => {
+//     set({ isLoading: true, error: null });
+//     try {
+//       const res = await fetch(`${API_BASE_URL}/api/users`);
+//       const data = await res.json();
+//       if (!res.ok) {
+//         set({ isLoading: false, error: data?.message || `HTTP ${res.status}` });
+//         return;
+//       }
+//       // backend returns { success: true, data: [...] }
+//       set({ students: data?.data ?? [], isLoading: false });
+//     } catch (err) {
+//       console.error("Error fetching users:", err);
+//       set({ isLoading: false, error: err.message });
+//     }
+//   },
 
   
   // fetchUsers: async () => {
@@ -172,4 +172,131 @@ setStudents: (students) => set({ students }),
 //       };
 //     }
 //   },
+// }));
+
+
+import { create } from "zustand";
+
+const API_BASE_URL = import.meta.env.PROD
+  ? "https://golden-hands-admin-server.vercel.app"
+  : "http://localhost:5000";
+
+export const userFunctionStore = create((set, get) => ({
+  students: [],
+  isLoading: false,
+  error: null,
+
+  setStudents: (students) => set({ students }),
+
+  addUser: async (newUser) => {
+    if (
+      !newUser?.firstName || !newUser?.lastName || !newUser?.email ||
+      !newUser?.contacts || !newUser?.address || !newUser?.program ||
+      !newUser?.nextOfKinName || !newUser?.nextOfKinContacts
+    ) {
+      return { success: false, message: "Please fill all required fields" };
+    }
+
+    set({ isLoading: true, error: null });
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newUser),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        set({ isLoading: false, error: data.message });
+        return { success: false, message: data.message || "Failed to add user" };
+      }
+
+      // Refresh the user list
+      await get().fetchUsers();
+
+      set({ isLoading: false });
+      return { success: true, message: data.message || "User added successfully" };
+    } catch (error) {
+      console.error("Error in addUser:", error);
+      set({ isLoading: false, error: error.message });
+      return { success: false, message: "Network error - please try again" };
+    }
+  },
+
+  fetchUsers: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users`);
+      const data = await res.json();
+      
+      if (!res.ok) {
+        set({ isLoading: false, error: data?.message || `HTTP ${res.status}` });
+        return;
+      }
+      
+      set({ students: data?.data ?? [], isLoading: false });
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      set({ isLoading: false, error: err.message });
+    }
+  },
+
+  updateUser: async (id, updates) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        set({ isLoading: false, error: data.message });
+        return { success: false, message: data.message };
+      }
+
+      await get().fetchUsers();
+      set({ isLoading: false });
+      return { success: true, message: data.message };
+    } catch (error) {
+      console.error("Error updating user:", error);
+      set({ isLoading: false, error: error.message });
+      return { success: false, message: "Network error - please try again" };
+    }
+  },
+
+  deleteUser: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        set({ isLoading: false, error: data.message });
+        return { success: false, message: data.message };
+      }
+
+      set((state) => ({
+        students: state.students.filter((s) => s._id !== id),
+        isLoading: false,
+      }));
+
+      return { success: true, message: data.message };
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      set({ isLoading: false, error: error.message });
+      return { success: false, message: "Network error - please try again" };
+    }
+  },
 }));
