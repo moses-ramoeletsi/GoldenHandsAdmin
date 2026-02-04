@@ -7,24 +7,55 @@ import userRoutes from './routes/user.js';
 dotenv.config();
 
 const app = express();
-app.use(express.json());
 const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(express.json());
 app.use(cors({
-    origin: ['https://golden-hands-admin.vercel.app', 'http://localhost:5173'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+  origin: ['https://golden-hands-admin.vercel.app', 'http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Health check route
 app.get('/', (req, res) => {
-  res.status(200).send('API is running');
+  res.status(200).json({ 
+    message: 'API is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
-app.use('/api', userRoutes);
+// API routes
+app.use('/api/users', userRoutes);
 
-// start server and attempt DB connect (server will still run if DB fails)
-app.listen(PORT, async () => {
-  const dbOk = await connectDatabase();
-  console.log(`Server is running on port ${PORT} (DB connected: ${dbOk})`);
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found',
+    path: req.path
+  });
 });
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error'
+  });
+});
+
+// Connect to database
+connectDatabase().catch(err => {
+  console.error('Database connection failed:', err);
+});
+
+// Only start server if not in serverless environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+  });
+}
 
 export default app;
