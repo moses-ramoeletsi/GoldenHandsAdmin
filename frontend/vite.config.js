@@ -6,10 +6,12 @@ export default defineConfig({
   plugins: [react(),tailwindcss()],
   server:{
     proxy:{
+      "/api": {
       target: "https://golden-hands-admin-server.vercel.app",
       changeOrigin: true,
       secure: false,
       rewrite: (path) => path
+      }
     }
   }
 })
