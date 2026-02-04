@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Image, Briefcase, BookOpen, Plus, Edit, Trash2, X, Menu, Search, Save, LogOut } from 'lucide-react';
 import {userFunctionStore} from '../store/user.store';
-
-
-// Mock initial data
-// const initialStudents = [
-//   { id: 1, firstName: 'Sarah', lastName: 'Johnson', email: 'sarah.j@email.com', contact: '+266 5555 1111', address: '123 Main St, Maseru', program: 'Certificate in Hair Care and Styling', nextOfKinName: 'John Johnson', nextOfKinContact: '+266 5555 2222', enrollmentDate: '2024-01-15' },
-//   { id: 2, firstName: 'Maria', lastName: 'Lopez', email: 'maria.l@email.com', contact: '+266 5555 3333', address: '456 Oak Ave, Maseru', program: 'Nail Technology', nextOfKinName: 'Carlos Lopez', nextOfKinContact: '+266 5555 4444', enrollmentDate: '2024-02-01' }
-// ];
+import logo from '../assets/images/GHA.png';
 
 const initialGallery = [
   { id: 1, category: 'Hair', title: 'Braided Hairstyle', imageUrl: 'https://placeholder.com/300' },
@@ -40,10 +34,10 @@ const Sidebar = ({ activeTab, setActiveTab, isMobileOpen, setIsMobileOpen }) => 
     <>
       <div className={`fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden ${isMobileOpen ? 'block' : 'hidden'}`} onClick={() => setIsMobileOpen(false)}></div>
       <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gray-900 text-white transform ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300`}>
-        <div className="p-6 border-b border-gray-800">
-          <h1 className="text-2xl font-bold">
-            <span className="text-yellow-500">Golden Hands</span>
-            <br />Admin Panel
+        <div className="p-6 border-b border-gray-800 flex flex-col items-center">
+          <img src={logo} alt="Golden Hands" className="h-25 w-auto object-contain mb-2" />
+          <h1 className="text-2xl font-bold text-center">
+            <span className="text-lg text-gray-300">Admin Panel</span>
           </h1>
         </div>
         <nav className="p-4">
