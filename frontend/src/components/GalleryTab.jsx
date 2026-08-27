@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Image, Plus, Edit, Trash2, X, Save, Loader2, Upload } from 'lucide-react';
 import { galleryFunctionStore } from '../store/gallery.store';
+import toast from 'react-hot-toast';
+import ConfirmDialog from './ConfirmDialog';
 
 const GalleryTab = () => {
   const { galleryItems, fetchGalleryItems, addGalleryItem, updateGalleryItem, deleteGalleryItem, isLoading } = galleryFunctionStore();
@@ -13,6 +15,9 @@ const GalleryTab = () => {
   const [formData, setFormData] = useState({ category: '', title: '' });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
+
+  const [deleteId, setDeleteId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => { 
     fetchGalleryItems(); 
@@ -51,10 +56,10 @@ const GalleryTab = () => {
     }
 
     if (result && result.success) {
-      alert(result.message);
+      toast.success(result.message);
       closeModal();
     } else {
-      setError(result?.message || "An error occurred");
+      toast.error(result?.message || "An error occurred");
     }
   };
 
@@ -62,7 +67,6 @@ const GalleryTab = () => {
     if (item) {
       setEditingItem(item);
       setFormData({ category: item.category, title: item.title });
-      // ✅ FIX: Cloudinary provides a full URL, so do NOT prepend API_BASE_URL
       setImagePreview(item.image || '');
       setImageFile(null); // Reset file, user must choose a new one to update
     } else {
@@ -84,15 +88,20 @@ const GalleryTab = () => {
     setError('');
   };
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this gallery item?')) {
-      const result = await deleteGalleryItem(id);
-      if (result && result.success) {
-        alert(result.message);
-      } else {
-        alert(result?.message || 'Failed to delete item');
-      }
+  const initiateDelete = (id) => {
+    setDeleteId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    const result = await deleteGalleryItem(deleteId);
+    if (result && result.success) {
+      toast.success(result.message);
+    } else {
+      toast.error(result?.message || 'Failed to delete item');
     }
+    setIsDeleting(false);
+    setDeleteId(null); // Close dialog
   };
 
   const filteredGallery = filterCategory === 'All' 
@@ -108,7 +117,7 @@ const GalleryTab = () => {
         </button>
       </div>
 
-      <div className="mb-6 flex gap-3">
+      <div className="mb-6 flex gap-3 flex-wrap">
         {['All', 'Hair', 'Nails'].map(cat => (
           <button 
             key={cat} 
@@ -132,11 +141,10 @@ const GalleryTab = () => {
           <p className="text-lg">No gallery items found.</p>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGallery.map(item => (
             <div key={item._id || item.id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition">
               <div className="h-48 bg-gray-200 overflow-hidden">
-                {/* ✅ Cloudinary URL is already absolute, so use it directly */}
                 <img 
                   src={item.image} 
                   alt={item.title} 
@@ -157,7 +165,7 @@ const GalleryTab = () => {
                   <button onClick={() => openModal(item)} className="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center justify-center gap-2 transition">
                     <Edit size={16} /> Edit
                   </button>
-                  <button onClick={() => handleDelete(item._id || item.id)} className="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center justify-center gap-2 transition">
+                  <button onClick={() => initiateDelete(item._id || item.id)} className="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center justify-center gap-2 transition">
                     <Trash2 size={16} /> Delete
                   </button>
                 </div>
@@ -167,16 +175,25 @@ const GalleryTab = () => {
         </div>
       )}
 
+      {/* ✅ FULLY RESPONSIVE MODAL */}
+            {/* ✅ FULLY RESPONSIVE MODAL WITH HIDDEN SCROLLBAR */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md">
-            <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-2xl font-bold">{editingItem ? 'Edit Gallery Item' : 'Add Gallery Item'}</h3>
-              <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          {/* Modal Container */}
+          <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-900">
+                {editingItem ? 'Edit Gallery Item' : 'Add Gallery Item'}
+              </h3>
+              <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-1 rounded-full transition">
                 <X size={24} />
               </button>
             </div>
-            <form onSubmit={handleSubmit}>
+            
+            {/* Scrollable Form Area with 'no-scrollbar' class added */}
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto no-scrollbar">
               <div className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-semibold mb-2">Category</label>
@@ -191,6 +208,7 @@ const GalleryTab = () => {
                     <option value="Nails">Nails</option>
                   </select>
                 </div>
+                
                 <div>
                   <label className="block text-sm font-semibold mb-2">Title</label>
                   <input 
@@ -203,7 +221,6 @@ const GalleryTab = () => {
                   />
                 </div>
                 
-                {/* FILE UPLOAD SECTION */}
                 <div>
                   <label className="block text-sm font-semibold mb-2">Upload Image</label>
                   <div className="flex items-center gap-4">
@@ -219,14 +236,12 @@ const GalleryTab = () => {
                     </label>
                   </div>
                   
-                  {/* Image Preview */}
                   {imagePreview && (
                     <div className="mt-3 h-40 w-full bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     </div>
                   )}
                   
-                  {/* Helper text for editing */}
                   {editingItem && !imagePreview && item.image && (
                     <p className="text-xs text-gray-500 mt-2">
                       Current image is saved. Upload a new file to replace it.
@@ -236,18 +251,20 @@ const GalleryTab = () => {
 
                 {error && <div className="text-red-600 font-medium text-sm">{error}</div>}
               </div>
-              <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-lg">
+
+              {/* Sticky Footer */}
+              <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
                 <button 
                   type="button" 
                   onClick={closeModal} 
-                  className="px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition"
+                  className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
                   disabled={isLoading} 
-                  className="bg-yellow-500 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-400 flex items-center gap-2 disabled:opacity-50 transition"
+                  className="px-5 py-2.5 bg-yellow-500 text-black rounded-lg font-semibold hover:bg-yellow-400 flex items-center gap-2 disabled:opacity-50 transition"
                 >
                   {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />} 
                   {isLoading ? 'Saving...' : 'Save'}
@@ -257,6 +274,16 @@ const GalleryTab = () => {
           </div>
         </div>
       )}
+
+      {/* Custom Delete Confirmation Dialog */}
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Gallery Item"
+        message="Are you sure you want to delete this image? This action cannot be undone."
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

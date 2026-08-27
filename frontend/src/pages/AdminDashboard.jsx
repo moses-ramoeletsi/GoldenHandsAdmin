@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 
 // Import independent components
 import Sidebar from '../components/Sidebar';
@@ -24,6 +25,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex h-screen bg-gray-100">
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          success: { style: { background: '#10B981', color: '#fff' } }, // Green
+          error: { style: { background: '#EF4444', color: '#fff' } },    // Red
+          duration: 3000,
+        }}
+      />
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab}
