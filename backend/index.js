@@ -4,22 +4,22 @@ import cors from 'cors';
 import connectDatabase from './dbConnection/connection.js';
 import userRoutes from './routes/user.js';
 import galleryRoutes from './routes/gallery.route.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(express.json());
 
 app.use(cors({
-  origin: ['https://golden-hands-admin.vercel.app', 'http://localhost:5173','https://golden-hands-academy.vercel.app'],
+  origin: [
+          'https://golden-hands-admin.vercel.app', 
+          'http://localhost:5173',
+          'http://localhost:5174',
+          'https://golden-hands-academy.vercel.app'
+        ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -58,8 +58,6 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/gallery', galleryRoutes);
 
-// Serve uploaded images statically
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
