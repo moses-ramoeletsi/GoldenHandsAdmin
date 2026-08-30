@@ -123,6 +123,9 @@ const StudentsTab = () => {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Program</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Address</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Phone</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Next of Kin</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Enrollment Date</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
               </tr>
@@ -134,7 +137,16 @@ const StudentsTab = () => {
                   <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
                   <td className="px-6 py-4">{student.program}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    {student.address}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {student.contacts }
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     {student.enrollmentDate ? new Date(student.enrollmentDate).toLocaleDateString() : ''}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {student.nextOfKinName} ({student.nextOfKinContacts})
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button onClick={() => openModal(student)} className="text-blue-600 hover:text-blue-800 mr-3">
