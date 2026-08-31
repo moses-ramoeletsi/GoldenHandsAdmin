@@ -5,6 +5,7 @@ import connectDatabase from './dbConnection/connection.js';
 import userRoutes from './routes/user.js';
 import galleryRoutes from './routes/gallery.route.js';
 import bookingRoutes from './routes/bookings.route.js';
+import contactRoutes from './routes/contact.route.js';
 
 dotenv.config();
 
@@ -59,6 +60,7 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/contacts', contactRoutes);
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({

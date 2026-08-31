@@ -1,14 +1,16 @@
 import React from 'react';
-import { Users, Image, Briefcase, BookOpen, LogOut, Calendar } from 'lucide-react';
+import { Users, Image, Briefcase, BookOpen, LogOut, Calendar, Mail } from 'lucide-react';
 import logo from '../assets/images/GHA.png'; // Adjust path if needed
 
 const Sidebar = ({ activeTab, setActiveTab, isMobileOpen, setIsMobileOpen }) => {
   const tabs = [
     { id: 'students', label: 'Students', icon: Users },
     { id: 'gallery', label: 'Gallery', icon: Image },
-    { id: 'services', label: 'Services', icon: Briefcase },
+    // { id: 'services', label: 'Services', icon: Briefcase },
     { id: 'bookings', label: 'Bookings', icon: Calendar },
-    { id: 'courses', label: 'Courses', icon: BookOpen }
+    { id: 'contacts', label: 'Contacts', icon: Mail }
+    // { id: 'courses', label: 'Courses', icon: BookOpen }
+
   ];
 
   return (
