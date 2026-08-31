@@ -37,12 +37,35 @@ const StudentsTab = () => {
   const programTypes = ["Hair Care and Styling", "Nail Technology"];
   const isEditMode = Boolean(editingStudent);
 
-  const handleSubmit = async (e) => {
+   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.contacts || !formData.address || !formData.program || !formData.nextOfKinName || !formData.nextOfKinContacts) {
-      setError("Please fill in all required fields");
+    // 1. Required fields check
+    if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim() || 
+        !formData.contacts.trim() || !formData.address.trim() || !formData.program || 
+        !formData.nextOfKinName.trim() || !formData.nextOfKinContacts.trim()) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    // 2. Validate Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    // 3. Validate Lesotho Phone Format (Contact)
+    const lesothoPhoneRegex = /^(?:\+266|266)?\s*[256]\d{3}\s*\d{4}$/;
+    if (!lesothoPhoneRegex.test(formData.contacts)) {
+      setError("Please enter a valid Lesotho phone number (e.g., 5XXX XXXX).");
+      return;
+    }
+
+    // 4. Validate Lesotho Phone Format (Next of Kin)
+    if (!lesothoPhoneRegex.test(formData.nextOfKinContacts)) {
+      setError("Please enter a valid Lesotho phone number for Next of Kin.");
       return;
     }
 
@@ -60,7 +83,6 @@ const StudentsTab = () => {
       toast.error(result?.message || "An error occurred");
     }
   };
-
   const openModal = (student = null) => {
     if (student) {
       setEditingStudent(student);
