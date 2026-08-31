@@ -8,6 +8,7 @@ import StudentsTab from '../components/StudentsTab';
 import GalleryTab from '../components/GalleryTab';
 // import ServicesTab from '../components/ServicesTab';   // Make sure to create this
 // import CoursesTab from '../components/CoursesTab';     // Make sure to create this
+import BookingsTab from '../components/BookingsTab';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('students');
@@ -19,6 +20,7 @@ export default function AdminDashboard() {
       case 'gallery': return <GalleryTab />;
       // case 'services': return <ServicesTab />;
       // case 'courses': return <CoursesTab />;
+      case 'bookings': return <BookingsTab />;
       default: return <StudentsTab />;
     }
   };

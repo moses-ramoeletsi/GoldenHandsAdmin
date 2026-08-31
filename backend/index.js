@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDatabase from './dbConnection/connection.js';
 import userRoutes from './routes/user.js';
 import galleryRoutes from './routes/gallery.route.js';
+import bookingRoutes from './routes/bookings.route.js';
 
 dotenv.config();
 
@@ -20,8 +21,8 @@ app.use(cors({
           'http://localhost:5174',
           'https://golden-hands-academy.vercel.app'
         ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], 
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Initialize database connection (moved outside routes)
@@ -57,7 +58,7 @@ app.get('/', (req, res) => {
 // API routes
 app.use('/api/users', userRoutes);
 app.use('/api/gallery', galleryRoutes);
-
+app.use('/api/bookings', bookingRoutes);
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
