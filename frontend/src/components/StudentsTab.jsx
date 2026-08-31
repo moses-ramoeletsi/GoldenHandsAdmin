@@ -9,6 +9,7 @@ const StudentsTab = () => {
     firstName: "", lastName: "", email: "", contacts: "", 
     address: "", program: "", nextOfKinName: "", nextOfKinContacts: "" 
   };
+  const [filterStatus, setFilterStatus] = useState('All'); // 'All', 'Pending', 'Approved', 'Rejected'
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
@@ -25,6 +26,14 @@ const StudentsTab = () => {
     fetchUsers(); 
   }, []);
 
+  const handleStatusChange = async (id, newStatus) => {
+    const result = await updateUser(id, { applicationStatus: newStatus });
+    if (result && result.success) {
+      toast.success(`Student status updated to ${newStatus}`);
+    } else {
+      toast.error("Failed to update status");
+    }
+  };
   const programTypes = ["Hair Care and Styling", "Nail Technology"];
   const isEditMode = Boolean(editingStudent);
 
@@ -86,12 +95,13 @@ const StudentsTab = () => {
     setIsDeleting(false);
     setDeleteId(null);
   };
-
-  const filteredStudents = students.filter(s =>
-    s.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = students.filter(s => {
+  const matchesSearch = s.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        s.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        s.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesStatus = filterStatus === 'All' || s.applicationStatus === filterStatus;
+  return matchesSearch && matchesStatus;
+});
 
   return (
     <div>
@@ -116,6 +126,19 @@ const StudentsTab = () => {
       </div>
       
       <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="flex flex-wrap gap-2 mb-4">
+          {['All', 'Pending', 'Approved', 'Rejected'].map(status => (
+            <button
+              key={status}
+              onClick={() => setFilterStatus(status)}
+              className={`px-4 py-2 rounded-lg font-medium transition ${
+                filterStatus === status ? 'bg-yellow-500 text-black' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -128,6 +151,8 @@ const StudentsTab = () => {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Next of Kin</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Enrollment Date</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -155,6 +180,21 @@ const StudentsTab = () => {
                     <button onClick={() => initiateDelete(student._id ?? student.id)} className="text-red-600 hover:text-red-800">
                       <Trash2 size={18} />
                     </button>
+                  </td>
+                  <td className="px-6 py-4">
+                    <select 
+                      value={student.applicationStatus || 'Pending'}
+                      onChange={(e) => handleStatusChange(student._id, e.target.value)}
+                      className={`text-xs font-medium px-2.5 py-1 rounded-full border cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 ${
+                        student.applicationStatus === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' :
+                        student.applicationStatus === 'Rejected' ? 'bg-red-100 text-red-800 border-red-200' :
+                        'bg-yellow-100 text-yellow-800 border-yellow-200'
+                      }`}
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Approved">Approved</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
                   </td>
                 </tr>
               ))}

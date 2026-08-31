@@ -44,6 +44,11 @@ const userSchema = new mongoose.Schema({
     required: [true, "Next of kin contact is required"],
     trim: true,
   },
+   applicationStatus: {
+    type: String,
+    enum: ['Pending', 'Approved', 'Rejected'],
+    default: 'Pending'
+  },
   enrollmentDate: {
     type: Date,
     default: Date.now,

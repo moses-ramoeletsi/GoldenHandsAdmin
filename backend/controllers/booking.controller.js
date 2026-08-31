@@ -71,6 +71,26 @@ export const getBookings = async (req, res) => {
   }
 };
 
+// ✅ NEW: Get bookings for a specific user by email
+export const getMyBookings = async (req, res) => {
+  try {
+    const { email } = req.query;
+    
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    // Find all bookings for this email, sorted by newest date first
+    const bookings = await Booking.find({ email: email.toLowerCase() })
+      .sort({ date: -1, time: -1 });
+
+    return res.status(200).json({ success: true, data: bookings });
+  } catch (error) {
+    console.error("Error in getMyBookings:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 export const updateBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;
